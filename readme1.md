@@ -1,13 +1,16 @@
-# Creación de entorno
+ Creación de entorno
 ```bash
 
 conda create -n dagster-mlops-rs python=3.9
 conda activate dagster-mlops-rs
 
+# ojo que no es la version necesaria
 pip install dagster==1.5.6
 
-# YO AGREGO
-export PATH=$PATH:/home/alejandro/.local/bin
+# El problema que tuve resultó en que terminé teniendo python=3.13, ahora
+# instalé python=3.10 (que tampoco es el sugerido, a ver..)
+conda install python=3.10
+conda install dagster=1.9.1
 ```
 
 # Creo estructura de carpetas
@@ -15,7 +18,6 @@ export PATH=$PATH:/home/alejandro/.local/bin
 
 dagster project scaffold --name recommender_system
 
-cd ecommender_system
 ```
 
 # Instalación de dependencias y creación de paquete
@@ -25,7 +27,7 @@ Modificar el archivo de setup para agregar las librerias correspondientes
 from setuptools import find_packages, setup
 import os
 
-DAGSTER_VERSION=os.getenv('DAGSTER_VERSION', '1.5.6')
+DAGSTER_VERSION=os.getenv('DAGSTER_VERSION', '1.9.2')
 DAGSTER_LIBS_VERSION=os.getenv('DAGSTER_LIBS_VERSION', '0.21.6')
 MLFLOW_VERSION=os.getenv('MLFLOW_VERSION', '2.8.0')
 
@@ -45,7 +47,6 @@ setup(
 
 ```bash
 pip install -e ".[dev]"
-
 ```
 
 # Correr mlflow (mirar repo clase anterior)
@@ -58,10 +59,16 @@ mlflow server --backend-store-uri sqlite:///mydb.sqlite
 mlflow server --backend-store-uri postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST/$MLFLOW_POSTGRES_DB --default-artifact-root $MLFLOW_ARTIFACTS_PATH -h 0.0.0.0 -p 5000
 ```
 
+
 # Correr dagster en modo development
 ```bash
-# Seteo de variables
+# Seteo de variables Windows
 set -o allexport && source environments/local && set +o allexport
+# Linux
+set -a && source environments/local && set +a
+
+# Para persistir la data
+export DAGSTER_HOME=/home/Share/Repo/ML/dagster-rs/dagster_home
 
 # Corro dagster
 dagster dev
