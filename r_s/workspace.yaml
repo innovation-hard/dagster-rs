@@ -1,0 +1,3 @@
+load_from:
+  - python_module: r_s.r_s
+    working_directory: /home/Share/Repo/ML/dagster-rs/r_s

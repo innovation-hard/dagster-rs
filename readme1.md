@@ -1,22 +1,17 @@
  Creación de entorno
 ```bash
 
-conda create -n dagster-mlops-rs python=3.9
+conda create -n dagster-mlops-rs 
+# python=3.9
 conda activate dagster-mlops-rs
-
-# ojo que no es la version necesaria
-pip install dagster==1.5.6
 
 # El problema que tuve resultó en que terminé teniendo python=3.13, ahora
 # instalé python=3.10 (que tampoco es el sugerido, a ver..)
-conda install python=3.10
+# conda install python=3.12
 conda install dagster=1.9.1
-```
 
 # Creo estructura de carpetas
-```bash
-
-dagster project scaffold --name recommender_system
+dagster project scaffold --name rec_sys
 
 ```
 
@@ -46,19 +41,9 @@ setup(
 
 
 ```bash
+cd rec_sys
 pip install -e ".[dev]"
 ```
-
-# Correr mlflow (mirar repo clase anterior)
-
-```bash
-export MLFLOW_TRACKING_URI=http://localhost:5000
-
-mlflow server --backend-store-uri sqlite:///mydb.sqlite
-
-mlflow server --backend-store-uri postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST/$MLFLOW_POSTGRES_DB --default-artifact-root $MLFLOW_ARTIFACTS_PATH -h 0.0.0.0 -p 5000
-```
-
 
 # Correr dagster en modo development
 ```bash
@@ -66,17 +51,55 @@ mlflow server --backend-store-uri postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD
 set -o allexport && source environments/local && set +o allexport
 # Linux
 set -a && source environments/local && set +a
+```
+
+# Correr mlflow (mirar repo clase anterior)
+
+```bash
+
+# va a ser necessario para los assets
+pip install dagster_mlflow
+
+export MLFLOW_TRACKING_URI=http://localhost:5000
+
+# El profe no metió este comando todavia
+mlflow server --backend-store-uri sqlite:///mydb.sqlite
+
+# Opción prefijo: python -m mlflow server
+
+mlflow server --backend-store-uri postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST/$MLFLOW_POSTGRES_DB --default-artifact-root $MLFLOW_ARTIFACTS_PATH --host 0.0.0.0 -p 5000 
+
 
 # Para persistir la data
 export DAGSTER_HOME=/home/Share/Repo/ML/dagster-rs/dagster_home
 
+
+# carpeta assets
+mkdir assets
+
 # Corro dagster
+dagster dev -d /home/Share/Repo/ML/dagster-rs/r_s
 dagster dev
 ```
 
 # Archivos `__init__.py`
 
 En la raiz:
+Cambio éste:
+
+```python 
+from dagster import Definitions, load_assets_from_modules
+
+from . import assets
+
+all_assets = load_assets_from_modules([assets])
+
+defs = Definitions(
+    assets=all_assets,
+)
+```
+
+Por éste:
 
 ```python 
 # Importo assets
