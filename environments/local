@@ -1,9 +1,9 @@
-DAGSTER_HOME=/home/Share/Repo/ML/dagster-rs/dagster_home
+DAGSTER_HOME=/home/repo/ML/dagster-rs/dagster_home
 MLFLOW_TRACKING_URI=http://localhost:5000
 
-postgres_data_folder=/home/Share/Repo/ML/mlops-ecosystem/dbs/data/postgres
+postgres_data_folder=/home/repo/ML/mlops-ecosystem/dbs/data/postgres
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=mysecretpassword
 POSTGRES_HOST=localhost:5432
 MLFLOW_POSTGRES_DB=mlflow_db
-MLFLOW_ARTIFACTS_PATH=/home/Share/Repo/ML/mlops-ecosystem/mlflow_data
+MLFLOW_ARTIFACTS_PATH=/home/repo/ML/mlops-ecosystem/mlflow_data

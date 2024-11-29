@@ -3,6 +3,7 @@
 
 conda create -n dagster-mlops-rs 
 # python=3.9
+conda config --add channels conda-forge
 conda activate dagster-mlops-rs
 
 # El problema que tuve resultó en que terminé teniendo python=3.13, ahora
@@ -71,14 +72,14 @@ mlflow server --backend-store-uri postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD
 
 
 # Para persistir la data
-export DAGSTER_HOME=/home/Share/Repo/ML/dagster-rs/dagster_home
+export DAGSTER_HOME=/home/repo/ML/dagster-rs/dagster_home
 
 
 # carpeta assets
 mkdir assets
 
 # Corro dagster
-dagster dev -d /home/Share/Repo/ML/dagster-rs/r_s
+dagster dev -d /home/repo/ML/dagster-rs/r_s
 dagster dev
 ```
 
