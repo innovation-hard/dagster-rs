@@ -1,7 +1,13 @@
 from dagster import Definitions, define_asset_job
+from dagster_mlflow import mlflow_tracking
+
 from .assets import core_assets, recommender_assets
 
 all_assets = [*core_assets, *recommender_assets]
+
+mlflow_resource = mlflow_tracking.configured({
+    'experiment_name': 'recommender_system'
+})
 
 # Configuraciones de jobs
 job_configs = {
@@ -27,7 +33,4 @@ job_configs = {
     }
 }
 
-defs = Definitions(
-    assets=all_assets,
-    # Configura trabajos, sensores o recursos adicionales si es necesario
-)
+

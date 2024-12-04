@@ -10,7 +10,7 @@ movies_categories_columns = [
 
 
 @asset(
-	freshness_policy=FreshnessPolicy(maximum_lag_minutes=5),
+	freshness_policy=FreshnessPolicy(maximum_lag_minutes=20),
 	# group_name='csv_data',
 	code_version="2",
 	config_schema={
@@ -19,7 +19,8 @@ movies_categories_columns = [
 )
 
 def movies(context) -> Output[pd.DataFrame]:
-	uri=context.op_config["uri"]
+	#context.op_config["uri"]
+	uri="https://raw.githubusercontent.com/mlops-itba/Datos-RS/main/data/peliculas_0.csv"
 	result=pd.read_csv(uri)
 	return Output(
 		result,
@@ -54,7 +55,7 @@ def users(context) -> Output[pd.DataFrame]:
    )
 
 @asset(
-	resource_defs={'mlflow':mlflow_tracking}
+	 resource_defs={'mlflow':mlflow_tracking}
    # group_name='csv_data',
    # io_manager_key="parquet_io_manager",
    # partitions_def=hourly_partitions,
@@ -64,7 +65,7 @@ def users(context) -> Output[pd.DataFrame]:
    # }
 )
 def scores(context) -> Output[pd.DataFrame]:
-	mlflow=context.resource.mlflow
+	mlflow=context.resources.mlflow
 	uri = 'https://raw.githubusercontent.com/mlops-itba/Datos-RS/main/data/scores_0.csv'
 	result=pd.read_csv(uri)
 	metrics={
@@ -108,4 +109,3 @@ def training_data(users:pd.DataFrame,movies:pd.DataFrame,scores:pd.DataFrame) ->
 		},
 
 	)
-	

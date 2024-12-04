@@ -1,5 +1,5 @@
 mlflow_resources = {
-	'mlflow':{
+	'mlflow_tracking':{
 		'config': {
 			'experiment_name':'recommender_system',
 		}
@@ -52,3 +52,4 @@ job_training_config = {
 		**training_config
 	}
 }
+
