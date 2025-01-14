@@ -1,36 +1,19 @@
-from dagster import Definitions, define_asset_job
-from dagster_mlflow import mlflow_tracking
+#__init__.py
 
-from .assets import core_assets, recommender_assets
+from r_s.assets import movies, users, scores, training_data
 
-all_assets = [*core_assets, *recommender_assets]
+##from dagster import load_assets_from_modules
+##from . import core
+##from . import recommender
 
-mlflow_resource = mlflow_tracking.configured({
-    'experiment_name': 'recommender_system'
-})
+##core_assets=load_assets_from_modules(
+##    package_module=core,group_name='core'
+##)
 
-# Configuraciones de jobs
-job_configs = {
-    'resources': {
-        'mlflow': {
-            'config': {
-                'experiment_name': 'recommender_system',
-            }            
-        },
-    },
-    'ops': {
-        'movies': {
-            'config': {
-                'uri': 'https://raw.githubusercontent.com/mlops-itba/Datos-RS/main/data/peliculas_0.csv'
-            }
-        },
-        'keras_dot_product_model': {'config': {
-            'batch_size': 128,
-            'epochs': 10,
-            'learning_rate': 1e-3,
-            'embeddings_dim': 5
-        }}
-    }
-}
+##recommenter_assets=load_assets_from_modules(
+##    package_module=recommender,group_name='recommender'
+##)
 
-
+## Define core_assets y recommender_assets
+core_assets = [movies, users, scores]
+recommender_assets = [training_data]

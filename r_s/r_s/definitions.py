@@ -1,35 +1,37 @@
-from dagster import Definitions, load_assets_from_modules, define_asset_job, load_assets_from_package_module
-from .configs import job_data_config,data_ops_config
+from dagster import Definitions, define_asset_job, AssetSelection
+from r_s.configs import job_data_config, job_training_config
+from r_s.assets import movies, users, scores, training_data
 
-from r_s import assets
+# Crear dos grupos de assets
+core_assets = [movies, users, scores]  # Assets del grupo 'core'
+recommender_assets = [training_data]  # Asset del grupo 'recommender'
 
-from dagster_mlflow import mlflow_tracking
-
-mlflow_resource = mlflow_tracking.configured({
-    "experiment_name": "recommender_system"
-})
-
-
-all_assets = load_assets_from_package_module(
-	package_module=assets, group_name='core'
-)
-
+# Definir jobs para materializar los grupos
 data_job = define_asset_job(
-	name='get_data',
-	selection=['movies','users','scores','training_data'],
-	config=job_data_config
+    name='get_data',
+    selection=['movies', 'users', 'scores'],
+    config=job_data_config
 )
 
+only_training_job = define_asset_job(
+    name="only_training",
+    selection=AssetSelection.groups('recommender'),  # Assets del grupo 'recommender'
+    config=job_training_config
+)
+
+# Combinar los assets de ambos grupos y definir el objeto Definitions
 defs = Definitions(
-    assets=all_assets,
-    resources={
-        "mlflow": mlflow_resource,
-    },
-    jobs=[data_job]
-)
-
-# Define el job asociando la configuración
-movies_job = define_asset_job(
-    "movies_job",
-    config=data_ops_config
+    assets=core_assets + recommender_assets,  # Combina ambos grupos
+    jobs=[
+        define_asset_job(
+            name='get_data',
+            selection=['movies', 'users', 'scores'],  # Solo core
+            config=job_data_config
+        ),
+        define_asset_job(
+            name='only_training',
+            selection=['training_data'],  # Solo training_data
+            config=job_training_config
+        )
+    ]
 )
