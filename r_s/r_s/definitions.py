@@ -6,16 +6,17 @@ from r_s.assets import movies, users, scores, training_data
 core_assets = [movies, users, scores]  # Assets del grupo 'core'
 recommender_assets = [training_data]  # Asset del grupo 'recommender'
 
-# Definir jobs para materializar los grupos
+# Define jobs with the selections
 data_job = define_asset_job(
     name='get_data',
-    selection=['movies', 'users', 'scores'],
+    selection=core_assets,  # Use the defined asset selection
     config=job_data_config
 )
 
+
 only_training_job = define_asset_job(
     name="only_training",
-    selection=AssetSelection.groups('recommender'),  # Assets del grupo 'recommender'
+    selection=recommender_assets,  # Assets del grupo 'recommender'
     config=job_training_config
 )
 
@@ -23,15 +24,7 @@ only_training_job = define_asset_job(
 defs = Definitions(
     assets=core_assets + recommender_assets,  # Combina ambos grupos
     jobs=[
-        define_asset_job(
-            name='get_data',
-            selection=['movies', 'users', 'scores'],  # Solo core
-            config=job_data_config
-        ),
-        define_asset_job(
-            name='only_training',
-            selection=['training_data'],  # Solo training_data
-            config=job_training_config
-        )
+        data_job,
+        only_training_job
     ]
 )

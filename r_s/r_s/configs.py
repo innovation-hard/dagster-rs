@@ -26,11 +26,11 @@ data_config = {
 
 
 job_data_config = {
-    'resources': {
+    'resources':   {
         **mlflow_resources
     },
-    'ops': {
-        **data_config,
+    'ops':  {
+        **data_config
     }
 }
 

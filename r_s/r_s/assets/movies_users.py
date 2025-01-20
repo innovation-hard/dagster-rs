@@ -1,4 +1,4 @@
-from dagster import asset, Output, String, AssetIn, FreshnessPolicy, MetadataValue
+from dagster import asset, Output, String, AssetIn, FreshnessPolicy, MetadataValue, Config
 from dagster_mlflow import mlflow_tracking
 import pandas as pd
 
@@ -7,19 +7,18 @@ movies_categories_columns = [
     "Children's", 'Comedy', 'Crime', 'Documentary', 'Drama',
     'Fantasy', 'Film-Noir', 'Horror', 'Musical', 'Mystery',
     'Romance', 'Sci-Fi', 'Thriller', 'War', 'Western']
-
-#    freshness_policy=FreshnessPolicy(maximum_lag_minutes=5),
+ 
 @asset(
+    freshness_policy=FreshnessPolicy(maximum_lag_minutes=60),
     group_name="core",  # Asignar al grupo 'core'
     code_version="2",
-    config_schema={
-        "uri": str
-    },
+    config_schema={'uri': str}
 )
 
 def movies(context) -> Output[pd.DataFrame]:
-    uri = context.op_config["uri"]
-    print(uri)
+    uri = context.op_config['uri']
+    uri='https://raw.githubusercontent.com/mlops-itba/Datos-RS/main/data/peliculas_0.csv'
+    context.log.info(uri)
     result = pd.read_csv(uri)
     return Output(
         result,
@@ -46,7 +45,8 @@ def users() -> Output[pd.DataFrame]:
         result,
         metadata={
             "Total rows": len(result),
-            **result.groupby('Occupation').count()['id'].to_dict()
+            **result.groupby('Occupation').count()['id'].to_dict(),
+            "preview": MetadataValue.md(result.head().to_markdown()),
         },
     )
 

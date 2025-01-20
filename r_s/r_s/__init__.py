@@ -1,6 +1,6 @@
 #__init__.py
 
-from r_s.assets import movies, users, scores, training_data
+#from r_s.assets import movies, users, scores, training_data
 
 ##from dagster import load_assets_from_modules
 ##from . import core
@@ -15,5 +15,5 @@ from r_s.assets import movies, users, scores, training_data
 ##)
 
 ## Define core_assets y recommender_assets
-core_assets = [movies, users, scores]
-recommender_assets = [training_data]
+#core_assets = [movies, users, scores]
+#recommender_assets = [training_data]
