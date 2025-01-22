@@ -1,6 +1,16 @@
-[build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+[tool.poetry]
+name = "r_s"
+version = "0.1.2"
+description = ""
+authors = ["Tu Nombre <tu_correo@ejemplo.com>"]
+#package-mode = false
 
-[tool.dagster]
-module_name = "r_s"
+[tool.poetry.dependencies]
+python= ">=3.9,<3.13"
+dagster = "^1.9.9"
+tensorflow = "^2.18.0"
+dagster-mlflow = "*"
+dagster-webserver = "*"
+pandas = "*"
+scikit-learn = "*"
+matplotlib = "*"

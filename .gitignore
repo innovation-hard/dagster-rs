@@ -6,6 +6,4 @@ dagster_home
 data
 mlartifacts
 mydb.sqlite
-
-recommender_system/
-rec_sys/
+*.lock

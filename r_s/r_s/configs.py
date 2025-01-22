@@ -35,15 +35,23 @@ job_data_config = {
 }
 
 training_config = {
-    "training_data": {  # Configuración específica para training_data
+    "training_data": { 
         "config": {
             "model_trained": True,
             "batch_size": 128,
             "epochs": 10,
             "learning_rate": 1e-3,
             "embeddings_dim": 5
-        }
-    }
+        },
+    },
+    "model_trained": { 
+        "config": {
+            "batch_size": 128,
+            "epochs": 10,
+            "learning_rate": 1e-3,
+            "embeddings_dim": 5
+        },
+    }    
 }
 
 job_training_config = {

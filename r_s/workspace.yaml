@@ -1,3 +1,2 @@
 load_from:
-  - python_module: r_s.r_s
-    working_directory: /home/repo/ML/dagster-rs/r_s
+  - python_package: r_s
