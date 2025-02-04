@@ -4,6 +4,7 @@ from dagster_mlflow import mlflow_tracking
 from sklearn.model_selection import train_test_split
 
 @multi_asset(
+    group_name="recommender",
     ins={
         "training_data": AssetIn(
         # key_prefix=["snowflake", "core"],
@@ -30,6 +31,7 @@ def preprocessed_data(training_data: pd.DataFrame):
 
 
 @multi_asset(
+    group_name="recommender",
     ins={
         "preprocessed_training_data": AssetIn(
     )
@@ -53,6 +55,7 @@ def split_data(context, preprocessed_training_data):
     
 
 @asset(
+    group_name="recommender",
     resource_defs={'mlflow': mlflow_tracking},
     ins={
         "X_train": AssetIn(),
@@ -105,6 +108,7 @@ def model_trained(context, X_train, y_train, user2Idx, movie2Idx):
     return model
 
 @asset(
+    group_name="recommender",
     resource_defs={'mlflow': mlflow_tracking},
     ins={
         "model_trained": AssetIn(),
@@ -130,6 +134,7 @@ def log_model(context, model_trained):
 
 
 @asset(
+    group_name="recommender",
     resource_defs={'mlflow': mlflow_tracking},
     ins={
         "model_stored": AssetIn(),
