@@ -7,12 +7,14 @@ sources:
     schema: source
     tables:
       - name: scores
+        meta:
+          dagster:
+            asset_key: ["orig_scores"]
       - name: movies
         meta:
           dagster:
-            asset_key: ["ab_movies"]
+            asset_key: ["orig_movies"]
       - name: users
-        config:
-          meta:
-            dagster:
-              group: marketing
+        meta:
+          dagster:
+            asset_key: ["orig_users"]

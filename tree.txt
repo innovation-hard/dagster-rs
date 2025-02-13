@@ -1,0 +1,43 @@
+[
+,"name":"L","contents":[{"error": "error opening dir"}
+,
+  ]},
+,"name":"2","contents":[{"error": "error opening dir"}
+,
+  ]},
+  {"type":"directory","name":"/home/repo/ML/dagster-rs/r_s","contents":[
+    {"type":"file","name":"poetry.lock","contents":[  ]},
+    {"type":"file","name":"pyproject.toml","contents":[  ]},
+    {"type":"file","name":"README.md","contents":[  ]},
+    {"type":"directory","name":"r_s","contents":[
+      {"type":"directory","name":"assets","contents":[
+        {"type":"file","name":"dbt.py","contents":[  ]},
+        {"type":"file","name":"__init__.py","contents":[  ]},
+        {"type":"file","name":"model_helper.py","contents":[  ]},
+        {"type":"file","name":"movies_users.py","contents":[  ]},
+        {"type":"file","name":"training.py","contents":[  ]},
+        {"type":"file","name":"train_model.py","contents":[  ]}
+      ]},
+      {"type":"file","name":"configs.py","contents":[  ]},
+      {"type":"file","name":"constants.py","contents":[  ]},
+      {"type":"file","name":"definitions.py","contents":[  ]},
+      {"type":"file","name":"__init__.py","contents":[  ]}
+    ]},
+    {"type":"directory","name":"r_s.egg-info","contents":[
+      {"type":"file","name":"dependency_links.txt","contents":[  ]},
+      {"type":"file","name":"PKG-INFO","contents":[  ]},
+      {"type":"file","name":"requires.txt","contents":[  ]},
+      {"type":"file","name":"SOURCES.txt","contents":[  ]},
+      {"type":"file","name":"top_level.txt","contents":[  ]}
+    ]},
+    {"type":"directory","name":"r_s_tests","contents":[
+      {"type":"file","name":"__init__.py","contents":[  ]},
+      {"type":"file","name":"test_assets.py","contents":[  ]}
+    ]},
+    {"type":"file","name":"setup.cfg","contents":[  ]},
+    {"type":"file","name":"setup.py","contents":[  ]},
+    {"type":"file","name":"workspace.yaml","contents":[  ]}
+  ]}
+,
+  {"type":"report","directories":5,"files":23}
+]

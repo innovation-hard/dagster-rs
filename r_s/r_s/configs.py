@@ -6,33 +6,14 @@ mlflow_resources = {
     },
 }
 
-data_config = {
-    'orig_movies': {
-        'config': {
-            'uri': 'https://raw.githubusercontent.com/mlops-itba/Datos-RS/main/data/peliculas_0.csv'
-        }
-    },
-    'orig_users': {
-        'config': {
-            'uri': 'https://raw.githubusercontent.com/mlops-itba/Datos-RS/main/data/usuarios_0.csv'
-        }
-    },
-    'orig_scores': {
-        'config': {
-            'uri': 'https://raw.githubusercontent.com/mlops-itba/Datos-RS/main/data/scores_0.csv'
-        }
-    }
-}
 
+from dagster_mlflow import mlflow_tracking
 
-job_data_config = {
-    'resources':   {
-        **mlflow_resources
-    },
-    'ops':  {
-        **data_config
-    }
-}
+mlflow_resource = mlflow_tracking.configured({
+    "experiment_name": "r_s",
+    #"tracking_uri": "http://localhost:8002", 
+})
+
 
 training_config = {
     "training_data": { 
@@ -54,11 +35,28 @@ training_config = {
     }    
 }
 
+#data_job
+job_data_config = {
+    'resources': {
+        'mlflow': {
+            'config': {
+                'experiment_name': 'r_s',
+            }
+        }
+    },
+    # 'ops': {
+    #     **training_config
+    # }
+}
+
+#only_training_job
 job_training_config = {
     'resources': {
-        **mlflow_resources
+        'mlflow': {
+            'config': {
+                'experiment_name': 'r_s',
+            }
+        }
     },
-    'ops': {
-        **training_config
-    }
+    'ops': training_config
 }

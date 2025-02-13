@@ -1,4 +1,4 @@
-from dagster import asset, AssetIn, Int, Float, multi_asset, AssetOut
+from dagster import asset, AssetIn, Int, Float, multi_asset, AssetOut, Field
 import pandas as pd
 from dagster_mlflow import mlflow_tracking
 from sklearn.model_selection import train_test_split
@@ -56,7 +56,8 @@ def split_data(context, preprocessed_training_data):
 
 @asset(
     group_name="recommender",
-    resource_defs={'mlflow': mlflow_tracking},
+    #resource_defs={'mlflow': mlflow_tracking},
+    required_resource_keys={"mlflow"},
     ins={
         "X_train": AssetIn(),
         "y_train": AssetIn(),
@@ -64,15 +65,16 @@ def split_data(context, preprocessed_training_data):
         "movie2Idx": AssetIn(),
     },
     config_schema={
-        'batch_size': Int,
-        'epochs': Int,
-        'learning_rate': Float,
-        'embeddings_dim': Int
+        'batch_size': Field(Int, default_value=128),
+        'epochs': Field(Int, default_value=10),
+        'learning_rate': Field(Float, default_value=1e-3),
+        'embeddings_dim': Field(Int, default_value=5)
     }
 )
 def model_trained(context, X_train, y_train, user2Idx, movie2Idx):
     from .model_helper import get_model
     from keras.optimizers import Adam
+
     mlflow = context.resources.mlflow
     mlflow.log_params(context.op_config)
     #mlflow.tensorflow.autolog()
@@ -83,7 +85,6 @@ def model_trained(context, X_train, y_train, user2Idx, movie2Idx):
     embeddings_dim = context.op_config["embeddings_dim"]
 
     model = get_model(len(movie2Idx), len(user2Idx), embeddings_dim)
-
     model.compile(Adam(learning_rate=learning_rate), 'mean_squared_error')
     
     context.log.info(f'batch_size: {batch_size} - epochs: {epochs}')
@@ -100,16 +101,19 @@ def model_trained(context, X_train, y_train, user2Idx, movie2Idx):
     )
     for i, l in enumerate(history.history['loss']):
         mlflow.log_metric('mse', l, i)
+
     from matplotlib import pyplot as plt
     fig, axs = plt.subplots(1)
     axs.plot(history.history['loss'], label='mse')
     plt.legend()
     mlflow.log_figure(fig, 'plots/loss.png')
+
     return model
 
 @asset(
     group_name="recommender",
-    resource_defs={'mlflow': mlflow_tracking},
+    #resource_defs={'mlflow': mlflow_tracking},
+    required_resource_keys={"mlflow"},
     ins={
         "model_trained": AssetIn(),
     },
@@ -135,7 +139,8 @@ def log_model(context, model_trained):
 
 @asset(
     group_name="recommender",
-    resource_defs={'mlflow': mlflow_tracking},
+    #resource_defs={'mlflow': mlflow_tracking},
+    required_resource_keys={"mlflow"},
     ins={
         "model_stored": AssetIn(),
         "X_test": AssetIn(),

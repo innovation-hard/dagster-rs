@@ -1,16 +1,19 @@
 [tool.poetry]
 name = "r_s"
-version = "0.1.2"
-description = ""
-authors = ["Tu Nombre <tu_correo@ejemplo.com>"]
+version = "0.2.4"
+description = "Proyecto MLOps Orquestacion"
+authors = ["Jorge Aguirre <jorge-aguirre@outlook.com>"]
 #package-mode = false
 
 [tool.poetry.dependencies]
-python= ">=3.9,<3.13"
-dagster = "^1.9.9"
-tensorflow = "^2.18.0"
-dagster-mlflow = "*"
-dagster-webserver = "*"
-pandas = "*"
-scikit-learn = "*"
-matplotlib = "*"
+python = ">=3.9,<3.13"
+dagster = "1.9.3"
+dagster-webserver ="1.9.3"
+dagster_mlflow = "*"
+tensorflow = "^2.12.0"
+airbyte-api = "*"
+dagster-airbyte = "*"
+dbt = "*"
+dbt-core = "*"
+dagster-dbt = "*"
+dagster-postgres = "*"

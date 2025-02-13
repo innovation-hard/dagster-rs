@@ -1,0 +1,11 @@
+ops:
+  model_trained:
+    config:
+      batch_size: 32
+      embeddings_dim: 64
+      epochs: 10
+      learning_rate: 0.001
+resources:
+  mlflow:
+    config:
+      experiment_name: r_s
