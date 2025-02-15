@@ -1,5 +1,5 @@
 from dagster import asset, Output, MetadataValue, String, FreshnessPolicy, AssetIn,  Config
-from dagster_dbt import get_asset_key_for_model
+from dagster_dbt import get_asset_key_for_source, get_asset_key_for_model
 from dagster_mlflow import mlflow_tracking
 from dagster import OpExecutionContext , AssetKey, In, asset, AssetIn
 from sqlalchemy import create_engine
@@ -14,6 +14,7 @@ movies_categories_columns = [
     'Romance', 'Sci-Fi', 'Thriller', 'War', 'Western']
  
 @asset(
+    #key=AssetKey(["dagster", "movies"]),
     #freshness_policy=FreshnessPolicy(maximum_lag_minutes=60),
     group_name="core",
     #code_version="2",
@@ -29,7 +30,6 @@ movies_categories_columns = [
     required_resource_keys={"postgres"},    
     #resource_defs={'postgres': Config('postgres')},
 )
-
 def orig_movies(context)-> Output[pd.DataFrame]:
     #result = pd.read_csv(movies)
 
@@ -67,6 +67,7 @@ def orig_movies(context)-> Output[pd.DataFrame]:
 
 
 @asset(group_name='core',
+    #key=AssetKey(["dagster", "users"]),
     deps=[AssetKey(["ab_", "users"])],
     # ins={
     #     "users": AssetIn(
@@ -79,8 +80,7 @@ def orig_movies(context)-> Output[pd.DataFrame]:
     # io_manager_key="parquet_io_manager",
     # partitions_def=hourly_partitions,
     # key_prefix=["s3", "core"],     
-    )
-
+)
 def orig_users(context)-> Output[pd.DataFrame]:
     postgres_uri='postgresql://airbyte:airbyte@localhost:5432/mlops'
     engine = create_engine(postgres_uri)
@@ -103,6 +103,7 @@ def orig_users(context)-> Output[pd.DataFrame]:
 
 
 @asset(
+    #key=AssetKey(["dagster", "scores"]), 
     group_name="core",
     deps=[AssetKey(["ab_", "scores"])],
     # ins={

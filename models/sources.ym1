@@ -1,0 +1,20 @@
+version: 2
+
+sources:
+  - name: mlops
+    description: "machine learning raw tables"
+    database: mlops
+    schema: source
+    tables:
+      - name: scores
+        meta:
+          dagster:
+            asset_key: ["orig_scores"]
+      - name: movies
+        meta:
+          dagster:
+            asset_key: ["orig_movies"]
+      - name: users
+        meta:
+          dagster:
+            asset_key: ["orig_users"]

@@ -17,6 +17,8 @@ from r_s.assets import preprocessed_data,split_data,model_trained,log_model,mode
 
 from r_s.configs import job_data_config, job_training_config, mlflow_resource, training_config
 
+from r_s.sensor import check_for_changes_in_postgres
+
 import os
 from dotenv import load_dotenv
 load_dotenv('/home/repo/ML/dagster-rs/r_s/r_s/.env') 
@@ -24,33 +26,6 @@ load_dotenv('/home/repo/ML/dagster-rs/r_s/r_s/.env')
 #------------------------------------------------------------------------------------------------
 #                                     POSTGRESQL
 #------------------------------------------------------------------------------------------------
-# Antes (causa error)
-#from dagster_postgres import postgres_resource  
-
-# Configuración del recurso de PostgreSQL
-# postgres_config = {
-#     "host": os.getenv("POSTGRES_HOST"),
-#     "port": os.getenv("POSTGRES_PORT"),
-#     "database": os.getenv("POSTGRES_DB"),
-#     "user": os.getenv("POSTGRES_USER"),
-#     "password": os.getenv("POSTGRES_PASSWORD"),
-# }
-
-# postgres_resource_configured = PostgresResource.configured(postgres_config)
-
-#----------------------
-# Ahora (versión actual)
-# from dagster_postgres import PostgresResource
-
-# postgres_db = PostgresResource(
-#     username=os.getenv("POSTGRES_USER"),
-#     password=os.getenv("POSTGRES_PASSWORD"),
-#     hostname=os.getenv("POSTGRES_HOST"),
-#     port= os.getenv("POSTGRES_PORT"),
-#     db_name=os.getenv("POSTGRES_DB"),
-# )
-
-#------------------------------------------------
 from dagster import ConfigurableResource
 import psycopg2
 
@@ -78,22 +53,6 @@ postgres_db = CustomPostgresResource(
     db_name=os.getenv("POSTGRES_DB"),
 )
 
-# defs = Definitions(
-#     assets=[...],
-#     resources={"postgres": postgres_db},
-#     jobs=[...]
-# )
-
-
-#------------------------------------------------------------------------------------------------
-#                                     Assets Groups 1
-#------------------------------------------------------------------------------------------------
-# Crear dos grupos de assets
-core_assets = [orig_movies, orig_users, orig_scores]
-recommender_assets = [training_data,preprocessed_data,split_data,model_trained,log_model,model_metrics]
-dbt_group = [my_dbt_assets]
-
-
 #------------------------------------------------------------------------------------------------
 #                                     AIRBYTE
 #------------------------------------------------------------------------------------------------
@@ -102,7 +61,6 @@ from dagster_airbyte import AirbyteResource, load_assets_from_airbyte_instance
 airbyte_resource = AirbyteResource(
     host=os.getenv("AIRBYTE_HOST"),
     port=os.getenv("AIRBYTE_PORT"),
-    # If using basic auth
     username=os.getenv("AIRBYTE_USER"),
     password=os.getenv("AIRBYTE_PASSWORD"),
 )
@@ -112,18 +70,19 @@ airbyte_assets = load_assets_from_airbyte_instance(
    key_prefix=["ab_"]
    )
 
-
 #------------------------------------------------------------------------------------------------
-#                                     Assets Groups 2
+#                                     Assets Groups
 #------------------------------------------------------------------------------------------------
 airbyte_group = [airbyte_assets]
-# Combine asset lists
-all_assets = core_assets + recommender_assets + airbyte_group + dbt_group
+core_assets = [orig_movies, orig_users, orig_scores]
+dbt_group = [my_dbt_assets]
+recommender_assets = [training_data,preprocessed_data,split_data,model_trained,log_model,model_metrics]
+
+all_assets = airbyte_group + core_assets + dbt_group + recommender_assets
 
 #------------------------------------------------------------------------------------------------
 #                                     JOBS
 #------------------------------------------------------------------------------------------------
-# Define jobs with the selections
 data_job = define_asset_job(
     name='get_data',
     selection=core_assets,
@@ -134,7 +93,6 @@ data_job = define_asset_job(
 only_training_job = define_asset_job(
     name="only_training",
     #selection=recommender_assets,
-    #selection=AssetSelection.keys("model_trained"),
     selection=AssetSelection.groups('recommender'),
     config=job_training_config
 )
@@ -142,8 +100,66 @@ only_training_job = define_asset_job(
 # Define a job that runs the entire pipeline
 full_pipeline_job = define_asset_job(
     name="full_pipeline",
-    selection=AssetSelection.all(),  # Selecciona todos los assets
+    # selection=(
+    #     AssetSelection.keys(["ab_", "movies"]) |  # Assets de Airbyte
+    #     AssetSelection.keys(["ab_", "scores"]) |
+    #     AssetSelection.keys(["ab_", "users"]) |
+    #     AssetSelection.keys("orig_movies") |  # Assets de core
+    #     AssetSelection.keys("orig_users") |
+    #     AssetSelection.keys("orig_scores") |
+    #     AssetSelection.keys("my_dbt_assets") |  # Assets de dbt
+    #     AssetSelection.keys("training_data")  # Assets de recommender
+    # ),
+    #selection=AssetSelection.keys(["ab_", "movies"]) | AssetSelection.keys(["ab_", "scores"]) | AssetSelection.keys(["ab_", "users"]) | AssetSelection.keys("orig_movies", "orig_users", "orig_scores") | AssetSelection.keys("my_dbt_assets") | AssetSelection.keys("training_data"),
+    selection=AssetSelection.all(),
+    #selection=AssetSelection.groups("core") | AssetSelection.groups("dbt") | AssetSelection.groups("recommender"),
+    #selection=AssetSelection.groups("airbyte_group") | AssetSelection.groups("core") | AssetSelection.groups("dbt") | AssetSelection.groups("recommender"),
 )
+
+#------------------------------------------------------------------------------------------------
+#                                     SCHEDULE
+#------------------------------------------------------------------------------------------------
+from dagster import schedule
+
+@schedule(
+    job=full_pipeline_job,
+    cron_schedule="0 0 * * *",  # Ejecutar cada 24 horas
+)
+def daily_schedule(context):
+    """
+    Schedule que ejecuta el pipeline una vez al día como respaldo.
+    """
+    context.log.info("Corriendo daily_schedule...")
+    return {}
+
+@schedule(
+    job=full_pipeline_job,
+    cron_schedule="0 * * * *",  # Ejecutar cada 60 minutos
+)
+def hourly_schedule(context):
+    """
+    Schedule que ejecuta el pipeline una vez al día como respaldo.
+    """
+    context.log.info("Corriendo hourly_schedule...")
+    return {}
+
+#------------------------------------------------------------------------------------------------
+#                                     SENSOR
+#------------------------------------------------------------------------------------------------
+from dagster import sensor, RunRequest
+
+@sensor(job=full_pipeline_job)
+def postgres_change_sensor(context):
+    """ 
+    Sensor que verifica cambios en PostgreSQL y ejecuta el pipeline si los detecta.
+    """
+    if check_for_changes_in_postgres():
+        context.log.info("Sensor: Cambios detectados en PostgreSQL. Ejecutando pipeline...")
+        return RunRequest(run_key="postgres_change_run", run_config={})
+    else:
+        context.log.info("Sensor: No se detectaron cambios en PostgreSQL.")
+        return None
+
 
 #------------------------------------------------------------------------------------------------
 #                                     DEFINITIONS
@@ -157,6 +173,8 @@ defs = Definitions(
         only_training_job,
         full_pipeline_job
     ],
+    sensors=[postgres_change_sensor],
+    schedules=[hourly_schedule],
     resources={"dbt": DbtCliResource(project_dir=os.fspath(dbt_project_dir)),
                "postgres": postgres_db,
                 #"postgres": postgres_resource_configured,

@@ -2,7 +2,7 @@ SELECT  CAST(id as INT) as movie_id,
     TO_DATE("Release_Date", 'YY-MM-DD') as release_date,
     "IMDB_URL" as imdb_url,
     CAST(CAST("Film_Noir" as INT) as BOOLEAN) as film_noir
-FROM {{ source('mlops', 'movies') }}
+    FROM {{ source('mlops', 'movies') }}
 
 --     "Film-Noir",
 --     "Action",

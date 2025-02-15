@@ -1,16 +1,11 @@
 version: 2
 
-models:
-  - name: movies
-    description: "Movies table transformed from orig_movies"
-    config:
-      materialized: table
-    columns:
-      - name: movie_id
-        description: "The unique ID of the movie"
-      - name: release_date
-        description: "The release date of the movie"
-      - name: imdb_url
-        description: "The URL of the movie on IMDB"
-      - name: film_noir
-        description: "Indicates if the movie is classified as Film Noir"
+sources:
+  - name: mlops
+    description: "machine learning raw tables"
+    database: mlops
+    schema: source
+    tables:
+      - name: scores
+      - name: movies
+      - name: users
