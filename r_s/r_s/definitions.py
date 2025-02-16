@@ -97,7 +97,13 @@ data_job = define_asset_job(
 only_training_job = define_asset_job(
     name="only_training",
     #selection=recommender_assets,
-    selection=AssetSelection.groups("my_dbt_assets") | AssetSelection.groups('recommender'),
+    #selection=AssetSelection.groups("my_dbt_assets") | AssetSelection.groups('recommender'),
+    #selection=AssetSelection.keys("my_dbt_asset") | AssetSelection.keys("training_data", "preprocessed_data", "split_data", "model_trained", "log_model", "model_metrics"),
+    # selection=AssetSelection.keys(
+    # "movies", "users", "scores",  # Assets de my_dbt_assets
+    # "training_data", "preprocessed_data", "split_data", "model_trained", "log_model", "model_metrics"  # Assets de recommender
+    # ),
+    selection=AssetSelection.all() - AssetSelection.keys(AssetKey(["ab_", "movies"]), AssetKey(["ab_", "users"]), AssetKey(["ab_", "scores"]), "orig_movies", "orig_users", "orig_scores"),    
     config=job_training_config
 )
 
@@ -119,7 +125,7 @@ from dagster import schedule
 
 @schedule(
     job=data_job,
-    cron_schedule="0 * * * *",  # Ejecutar cada 24 horas
+    cron_schedule="*/30 * * * *",  # Ejecutar cada 24 horas
 )
 def hourly_sensor_schedule(context):
     """
@@ -143,15 +149,24 @@ def hourly_schedule(context):
 #                                     SENSOR
 #------------------------------------------------------------------------------------------------
 from dagster import sensor, RunRequest
+import uuid
 
-@sensor(job=only_training_job)
+@sensor(job=only_training_job,minimum_interval_seconds=120)
 def postgres_change_sensor(context):
     """ 
     Sensor que verifica cambios en PostgreSQL y ejecuta el pipeline si los detecta.
     """
     if check_for_changes_in_postgres():
         context.log.info("Sensor: Cambios detectados en PostgreSQL. Ejecutando pipeline...")
-        return RunRequest(run_key="postgres_change_run", run_config={})
+        
+        # Generar un run_key único (por ejemplo, un UUID)
+        run_key = f"postgres_change_run_{uuid.uuid4()}"
+        
+        run_config = {
+            # configuración específica only_training_job
+        }
+        
+        return RunRequest(run_key=run_key, run_config=run_config)
     else:
         context.log.info("Sensor: No se detectaron cambios en PostgreSQL.")
         return SkipReason("No se detectaron cambios en PostgreSQL.")
@@ -202,7 +217,7 @@ defs = Definitions(
         order_pipeline_job,
         full_pipeline_job
     ],
-    sensors=[postgres_change_sensor,data_job_sensor],
+    sensors=[postgres_change_sensor],
     schedules=[hourly_schedule,hourly_sensor_schedule],
     resources={"dbt": DbtCliResource(project_dir=os.fspath(dbt_project_dir)),
                "postgres": postgres_db,
