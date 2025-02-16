@@ -8,3 +8,4 @@ mlartifacts
 mydb.sqlite
 *.lock
 /target/
+*.log
