@@ -125,7 +125,7 @@ from dagster import schedule
 
 @schedule(
     job=data_job,
-    cron_schedule="*/10 * * * *",  # Ejecutar cada 24 horas
+    cron_schedule="*/10 * * * *",
 )
 def hourly_sensor_schedule(context):
     """

@@ -7,8 +7,6 @@ from sklearn.model_selection import train_test_split
     group_name="recommender",
     ins={
         "training_data": AssetIn(
-        # key_prefix=["snowflake", "core"],
-        # metadata={"columns": ["id"]}
         )
     },
     outs={
@@ -56,7 +54,6 @@ def split_data(context, preprocessed_training_data):
 
 @asset(
     group_name="recommender",
-    #resource_defs={'mlflow': mlflow_tracking},
     required_resource_keys={"mlflow"},
     ins={
         "X_train": AssetIn(),
@@ -112,7 +109,6 @@ def model_trained(context, X_train, y_train, user2Idx, movie2Idx):
 
 @asset(
     group_name="recommender",
-    #resource_defs={'mlflow': mlflow_tracking},
     required_resource_keys={"mlflow"},
     ins={
         "model_trained": AssetIn(),
