@@ -9,3 +9,4 @@ mydb.sqlite
 *.lock
 /target/
 *.log
+*.env
